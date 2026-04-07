@@ -1186,7 +1186,7 @@ ul {
   }
 
   .top-bar__inner {
-    justify-content: flex-end;
+    justify-content: space-between;
   }
 
   .navbar__toggle {
