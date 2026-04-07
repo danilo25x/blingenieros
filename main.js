@@ -1,5 +1,5 @@
 /* ============================================
-   BL INGENIEROS — Main JavaScript
+   BL INGENIEROS — Main JavaScript v2
    ============================================ */
 import './style.css';
 
@@ -28,9 +28,7 @@ function initHeroSlider() {
         dots[current].classList.add('active');
     }
 
-    function next() {
-        goTo(current + 1);
-    }
+    function next() { goTo(current + 1); }
 
     function startAutoPlay() {
         interval = setInterval(next, 5000);
@@ -54,11 +52,12 @@ function initHeroSlider() {
     startAutoPlay();
 }
 
-/* ---------- Navbar ---------- */
+/* ---------- Navbar (with outside-click close) ---------- */
 function initNavbar() {
     const navbar = document.getElementById('navbar');
     const toggle = document.getElementById('menuToggle');
     const menu = document.getElementById('navMenu');
+    const overlay = document.getElementById('menuOverlay');
     const menuLinks = menu?.querySelectorAll('a');
 
     // Sticky shadow
@@ -66,20 +65,35 @@ function initNavbar() {
         navbar?.classList.toggle('scrolled', window.scrollY > 50);
     });
 
+    function openMenu() {
+        toggle?.classList.add('active');
+        menu?.classList.add('open');
+        overlay?.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeMenu() {
+        toggle?.classList.remove('active');
+        menu?.classList.remove('open');
+        overlay?.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
     // Hamburger toggle
     toggle?.addEventListener('click', () => {
-        toggle.classList.toggle('active');
-        menu?.classList.toggle('open');
-        document.body.style.overflow = menu?.classList.contains('open') ? 'hidden' : '';
+        if (menu?.classList.contains('open')) {
+            closeMenu();
+        } else {
+            openMenu();
+        }
     });
 
-    // Close menu on link click
+    // Close on overlay click (touching outside the menu)
+    overlay?.addEventListener('click', closeMenu);
+
+    // Close on link click
     menuLinks?.forEach(link => {
-        link.addEventListener('click', () => {
-            toggle?.classList.remove('active');
-            menu?.classList.remove('open');
-            document.body.style.overflow = '';
-        });
+        link.addEventListener('click', closeMenu);
     });
 
     // Active section highlighting
@@ -91,7 +105,6 @@ function initNavbar() {
             const height = section.offsetHeight;
             const id = section.getAttribute('id');
             const link = menu?.querySelector(`a[href="#${id}"]`);
-
             if (scrollY >= top && scrollY < top + height) {
                 menuLinks?.forEach(l => l.classList.remove('active'));
                 link?.classList.add('active');
@@ -104,8 +117,10 @@ function initNavbar() {
 function initSmoothScroll() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', (e) => {
+            const href = anchor.getAttribute('href');
+            if (href === '#') return;
             e.preventDefault();
-            const target = document.querySelector(anchor.getAttribute('href'));
+            const target = document.querySelector(href);
             if (target) {
                 const navbarHeight = document.getElementById('navbar')?.offsetHeight || 0;
                 const targetTop = target.getBoundingClientRect().top + window.scrollY - navbarHeight;
@@ -122,7 +137,6 @@ function initRevealAnimations() {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry, index) => {
             if (entry.isIntersecting) {
-                // Stagger effect
                 setTimeout(() => {
                     entry.target.classList.add('visible');
                 }, index * 100);
@@ -136,13 +150,63 @@ function initRevealAnimations() {
 
     reveals.forEach(el => observer.observe(el));
 
-    // Also reveal about cards and client cards
+    // Also reveal about & client cards
     document.querySelectorAll('.about__card, .client-card, .objective-item').forEach(el => {
         if (!el.classList.contains('reveal')) {
             el.classList.add('reveal');
             observer.observe(el);
         }
     });
+}
+
+/* ---------- Clients Carousel (mobile) ---------- */
+function initClientsCarousel() {
+    const track = document.getElementById('carouselTrack');
+    const dots = document.querySelectorAll('#carouselDots .carousel-dot');
+    if (!track || !dots.length) return;
+
+    const slides = track.querySelectorAll('.clients__carousel-slide');
+    let current = 0;
+    let autoInterval;
+
+    function goTo(index) {
+        current = (index + slides.length) % slides.length;
+        track.style.transform = `translateX(-${current * 100}%)`;
+        dots.forEach(d => d.classList.remove('active'));
+        dots[current]?.classList.add('active');
+    }
+
+    function startAuto() {
+        autoInterval = setInterval(() => goTo(current + 1), 3500);
+    }
+
+    function resetAuto() {
+        clearInterval(autoInterval);
+        startAuto();
+    }
+
+    dots.forEach(dot => {
+        dot.addEventListener('click', () => {
+            goTo(parseInt(dot.dataset.index));
+            resetAuto();
+        });
+    });
+
+    // Touch swipe support
+    let startX = 0;
+    track.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+    }, { passive: true });
+
+    track.addEventListener('touchend', (e) => {
+        const diff = startX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 40) {
+            goTo(diff > 0 ? current + 1 : current - 1);
+            resetAuto();
+        }
+    }, { passive: true });
+
+    startAuto();
 }
 
 /* ---------- Contact Form ---------- */
@@ -156,11 +220,10 @@ function initContactForm() {
         const message = document.getElementById('formMessage')?.value;
 
         if (name && email && message) {
-            // Show success feedback
             const btn = form.querySelector('button[type="submit"]');
             const originalText = btn.textContent;
             btn.textContent = '¡MENSAJE ENVIADO!';
-            btn.style.background = '#2e9b3e';
+            btn.style.background = '#00AEEF';
             btn.disabled = true;
 
             setTimeout(() => {
