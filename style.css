@@ -508,15 +508,15 @@ ul {
 }
 
 .about__card--mision {
-  background-image: url('/images/about_mision.jpeg');
+  background-image: url('./images/about_mision.jpeg');
 }
 
 .about__card--vision {
-  background-image: url('/images/about_vision.jpeg');
+  background-image: url('./images/about_vision.jpeg');
 }
 
 .about__card--valores {
-  background-image: url('/images/about_compromiso.jpeg');
+  background-image: url('./images/about_compromiso.jpeg');
 }
 
 .about__card h3 {

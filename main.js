@@ -1,7 +1,7 @@
 /* ============================================
    BL INGENIEROS — Main JavaScript v2
    ============================================ */
-import './style.css';
+
 
 document.addEventListener('DOMContentLoaded', () => {
     initHeroSlider();
